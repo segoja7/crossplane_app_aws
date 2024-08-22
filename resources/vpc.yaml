@@ -1,0 +1,378 @@
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: VPC
+metadata:
+  name: two-tier-vpc-app
+  labels:
+    vpc: wordpress
+spec:
+  forProvider:
+    cidrBlock: 172.16.0.0/16
+    enableDnsHostnames: true
+    enableDnsSupport: true
+    region: us-east-1
+    tags:
+      Name: vpc-wordpress
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: Subnet
+metadata:
+  name: database-private-subnet-az1
+  labels:
+    dbsubnet1: private1
+spec:
+  forProvider:
+    availabilityZone: us-east-1a
+    cidrBlock: 172.16.1.0/24
+    mapPublicIpOnLaunch: false
+    region: us-east-1
+    tags:
+      Name: database-private-subnet-az1
+      ManagedBy: crossplane
+    vpcIdSelector:
+      matchLabels:
+        vpc: wordpress
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: Subnet
+metadata:
+  name: database-private-subnet-az2
+  labels:
+    dbsubnet2: private2
+spec:
+  forProvider:
+    availabilityZone: us-east-1b
+    cidrBlock: 172.16.2.0/24
+    mapPublicIpOnLaunch: false
+    region: us-east-1
+    tags:
+      Name: database-private-subnet-az2
+      ManagedBy: crossplane
+    vpcIdSelector:
+      matchLabels:
+        vpc: wordpress
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: Subnet
+metadata:
+  name: app-private-subnet-az1
+  labels:
+    appsubnet1: private1
+spec:
+  forProvider:
+    availabilityZone: us-east-1a
+    cidrBlock: 172.16.3.0/24
+    mapPublicIpOnLaunch: false
+    region: us-east-1
+    tags:
+      Name: app-private-subnet-az1
+      ManagedBy: crossplane
+    vpcIdSelector:
+      matchLabels:
+        vpc: wordpress
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: Subnet
+metadata:
+  name: app-private-subnet-az2
+  labels:
+    appsubnet2: private2
+spec:
+  forProvider:
+    availabilityZone: us-east-1b
+    cidrBlock: 172.16.4.0/24
+    mapPublicIpOnLaunch: false
+    region: us-east-1
+    tags:
+      Name: app-private-subnet-az2
+      ManagedBy: crossplane
+    vpcIdSelector:
+      matchLabels:
+        vpc: wordpress
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: Subnet
+metadata:
+  name: public-subnet-az1
+  labels:
+    subnet1: public-az1
+spec:
+  forProvider:
+    availabilityZone: us-east-1a
+    cidrBlock: 172.16.5.0/24
+    mapPublicIpOnLaunch: true
+    region: us-east-1
+    tags:
+      Name: public-subnet-az1
+      ManagedBy: crossplane
+    vpcIdSelector:
+      matchLabels:
+        vpc: wordpress
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: Subnet
+metadata:
+  name: public-subnet-az2
+  labels:
+    subnet2: public-az2
+spec:
+  forProvider:
+    availabilityZone: us-east-1b
+    cidrBlock: 172.16.6.0/24
+    mapPublicIpOnLaunch: true
+    region: us-east-1
+    tags:
+      Name: public-subnet-az2
+      ManagedBy: crossplane
+    vpcIdSelector:
+      matchLabels:
+        vpc: wordpress
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTable
+metadata:
+  name: public-route-table
+  labels:
+    route_table: public
+spec:
+  forProvider:
+    region: us-east-1
+    tags:
+      Name: public-route-table
+      ManagedBy: crossplane
+    vpcIdSelector:
+      matchLabels:
+        vpc: wordpress
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTable
+metadata:
+  name: private-route-table
+  labels:
+    route_table: private
+spec:
+  forProvider:
+    region: us-east-1
+    tags:
+      Name: private-route-table
+      ManagedBy: crossplane
+    vpcIdSelector:
+      matchLabels:
+        vpc: wordpress
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: InternetGateway
+metadata:
+  name: internetgateway
+  labels:
+    internetgateway: igw1
+spec:
+  forProvider:
+    region: us-east-1
+    tags:
+      Name: internetgateway
+      ManagedBy: crossplane
+    vpcIdSelector:
+      matchLabels:
+        vpc: wordpress
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: EIP
+metadata:
+  name: eip-nat-gateway-az1
+  labels:
+    eip: eip-az1
+spec:
+  forProvider:
+    region: us-east-1
+    tags:
+      Name: eip-nat-gateway-az1
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7
+#---
+#apiVersion: ec2.aws.upbound.io/v1beta1
+#kind: EIP
+#metadata:
+#  name: eip-nat-gateway-az2
+#  labels:
+#    eip: eip-az2
+#spec:
+#  forProvider:
+#    region: us-east-1
+#    tags:
+#      Name: eip-nat-gateway-az2
+#      ManagedBy: crossplane
+#  providerConfigRef:
+#    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: NATGateway
+metadata:
+  name: nat-gateway-az1
+  labels:
+    natgatewayaz1: nat-az1
+spec:
+  forProvider:
+    allocationIdSelector:
+      matchLabels:
+        eip: eip-az1
+    connectivityType: public
+    region: us-east-1
+    subnetIdSelector:
+      matchLabels:
+        subnet1: public-az1
+    tags:
+      Name: nat-gateway-az1
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTableAssociation
+metadata:
+  name: private-route-table-dbassociation1
+spec:
+  forProvider:
+    region: us-east-1
+    routeTableIdSelector:
+      matchLabels:
+        route_table: private
+    subnetIdSelector:
+      matchLabels:
+        dbsubnet1: private1
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTableAssociation
+metadata:
+  name: private-route-table-dbassociation2
+spec:
+  forProvider:
+    region: us-east-1
+    routeTableIdSelector:
+      matchLabels:
+        route_table: private
+    subnetIdSelector:
+      matchLabels:
+        dbsubnet2: private2
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTableAssociation
+metadata:
+  name: private-route-table-appassociation1
+spec:
+  forProvider:
+    region: us-east-1
+    routeTableIdSelector:
+      matchLabels:
+        route_table: private
+    subnetIdSelector:
+      matchLabels:
+        appsubnet1: private1
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTableAssociation
+metadata:
+  name: private-route-table-appassociation2
+spec:
+  forProvider:
+    region: us-east-1
+    routeTableIdSelector:
+      matchLabels:
+        route_table: private
+    subnetIdSelector:
+      matchLabels:
+        appsubnet2: private2
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTableAssociation
+metadata:
+  name: public-route-table1
+spec:
+  forProvider:
+    region: us-east-1
+    routeTableIdSelector:
+      matchLabels:
+        route_table: public
+    subnetIdSelector:
+      matchLabels:
+        subnet1: public-az1
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: RouteTableAssociation
+metadata:
+  name: public-route-table2
+spec:
+  forProvider:
+    region: us-east-1
+    routeTableIdSelector:
+      matchLabels:
+        route_table: public
+    subnetIdSelector:
+      matchLabels:
+        subnet2: public-az2
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta2
+kind: Route
+metadata:
+  name: publicroute
+spec:
+  forProvider:
+    destinationCidrBlock: 0.0.0.0/0
+    region: us-east-1
+    routeTableIdSelector:
+      matchLabels:
+        route_table: public
+    gatewayIdSelector:
+      matchLabels:
+        internetgateway: igw1
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta2
+kind: Route
+metadata:
+  name: privateroute
+spec:
+  forProvider:
+    destinationCidrBlock: 0.0.0.0/0
+    region: us-east-1
+    routeTableIdSelector:
+      matchLabels:
+        route_table: private
+    natGatewayId: nat-05090fbcb597405be #Todo only can make reference of nat gateway using the id and not the labels.
+  providerConfigRef:
+    name: segoja7
+
