@@ -1,0 +1,60 @@
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroup
+metadata:
+  name: ec2securitygroup
+  labels:
+    ec2securitygroup: ec2-wordpress-sg
+spec:
+  forProvider:
+    description: EC2 Wordpress Security Group
+    name: ec2-wordpress-sg
+    region: us-east-1
+    revokeRulesOnDelete: true
+    tags:
+      Name: ec2-wordpress-sg
+      ManagedBy: crossplane
+    vpcIdSelector:
+      matchLabels:
+        vpc: wordpress
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupIngressRule
+metadata:
+  name: http-rule
+spec:
+  forProvider:
+    cidrIpv4: 0.0.0.0/0
+    description: Allow access to EC2 from ELB
+    fromPort: 80
+    toPort: 80
+    ipProtocol: tcp
+    region: us-east-1
+    securityGroupIdSelector:
+      matchLabels:
+        ec2securitygroup: ec2-wordpress-sg
+    tags:
+      Name: ec2-wordpress-sg
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupEgressRule
+metadata:
+  name: outbound-rule-ec2-wordpress-sg
+spec:
+  forProvider:
+    cidrIpv4: 0.0.0.0/0
+    description: Egress Rule
+    ipProtocol: "-1"
+    region: us-east-1
+    securityGroupIdSelector:
+      matchLabels:
+        ec2securitygroup: ec2-wordpress-sg
+    tags:
+      Name: ec2-wordpress-sg
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7

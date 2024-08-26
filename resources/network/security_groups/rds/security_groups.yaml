@@ -1,0 +1,63 @@
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroup
+metadata:
+  name: rdssecuritygroup
+  labels:
+    rdssecuritygroup: rds-wordpress-sg
+spec:
+  forProvider:
+    description: RDS Wordpress database Security Group
+    name: rds-wordpress-sg
+    region: us-east-1
+    revokeRulesOnDelete: true
+    tags:
+      Name: rds-wordpress-sg
+      ManagedBy: crossplane
+    vpcIdSelector:
+      matchLabels:
+        vpc: wordpress
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupIngressRule
+metadata:
+  name: app-to-db-rule
+spec:
+  forProvider:
+    description: Allow access to RDS from EC2
+    fromPort: 3306
+    toPort: 3306
+    ipProtocol: tcp
+    region: us-east-1
+    referencedSecurityGroupIdSelector:
+      matchLabels:
+        ec2securitygroup: ec2-wordpress-sg
+    securityGroupIdSelector:
+      matchLabels:
+        rdssecuritygroup: rds-wordpress-sg
+    tags:
+      Name: rds-wordpress-sg
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupEgressRule
+metadata:
+  name: outbound-rule-rds-sg
+spec:
+  forProvider:
+    cidrIpv4: 0.0.0.0/0
+    description: Egress Rule
+    ipProtocol: "-1"
+    region: us-east-1
+    securityGroupIdSelector:
+      matchLabels:
+        rdssecuritygroup: rds-wordpress-sg
+    tags:
+      Name: rds-wordpress-sg
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7

@@ -6,7 +6,7 @@ metadata:
     vpc: wordpress
 spec:
   forProvider:
-    cidrBlock: 172.16.0.0/16
+    cidrBlock: 172.16.0.0/16 #28
     enableDnsHostnames: true
     enableDnsSupport: true
     region: us-east-1
@@ -372,7 +372,9 @@ spec:
     routeTableIdSelector:
       matchLabels:
         route_table: private
-    natGatewayId: nat-05090fbcb597405be #Todo only can make reference of nat gateway using the id and not the labels.
+    natGatewayId: nat-0d497f8cd8c5a97c5 #Todo only can make reference of nat gateway using the id and not the labels.
+    #You need first create the nat gateway for later create the table route.
+    # I do not know in this moment if can use references as outputs in terraform for assigns attributes.
   providerConfigRef:
     name: segoja7
 
