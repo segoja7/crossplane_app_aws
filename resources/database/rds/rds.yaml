@@ -1,0 +1,70 @@
+apiVersion: rds.aws.upbound.io/v1beta1
+kind: SubnetGroup
+metadata:
+  name: wordpress-subnetgroup
+spec:
+  forProvider:
+    description: subnet group for rds wordpress
+    region: us-east-1
+    subnetIdRefs:
+        - name: database-private-subnet-az1
+        - name: database-private-subnet-az2
+    tags:
+      Name: rds-wordpress-sg
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: rds.aws.upbound.io/v1beta2
+kind: Instance
+metadata:
+  annotations:
+  labels:
+  name: wordpress-dbinstance
+spec:
+  forProvider:
+    allocatedStorage: 30
+    allowMajorVersionUpgrade: false
+    applyImmediately: true
+    autoGeneratePassword: true #Not use with manageMasterUserPassword
+    autoMinorVersionUpgrade: true
+    availabilityZone: us-east-1a
+    backupRetentionPeriod: 0
+    backupWindow: 09:46-10:16
+    copyTagsToSnapshot: true
+    dbName: wordpressdb
+    identifier: wordpressdb
+    dbSubnetGroupNameRef:
+      name: wordpress-subnetgroup
+    deleteAutomatedBackups: true
+    deletionProtection: false
+    engine: mysql
+    engineVersion: "8.0.35"
+    instanceClass: db.t4g.micro
+#    instanceClass: db.t3.micro
+    maintenanceWindow: Mon:00:00-Mon:03:00
+    maxAllocatedStorage: 40
+    monitoringInterval: 0
+    multiAz: true
+    networkType: IPV4
+    passwordSecretRef:
+      key: password
+      name: passwd-rds-wordpress
+      namespace: crossplane-system
+    #This is a not good practice for prd enviroments, the password will be stored in the state file.
+    port: 3306
+    publiclyAccessible: false
+    region: us-east-1
+    skipFinalSnapshot: true
+    storageEncrypted: true
+    storageType: gp3
+    username: wordpressadmin
+    tags:
+      Name: wordpress-dbinstance
+      ManagedBy: crossplane
+    vpcSecurityGroupIdSelector:
+      matchLabels:
+        rdssecuritygroup: rds-wordpress-sg
+  providerConfigRef:
+    name: segoja7
+---
