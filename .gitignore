@@ -480,3 +480,4 @@ cython_debug/
 .idea/
 /.$two_tier_apps.drawio.bkp
 /two_tier_apps.drawio
+/resources/database/rds/rds2.yaml
