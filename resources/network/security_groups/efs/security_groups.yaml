@@ -1,0 +1,63 @@
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroup
+metadata:
+  name: efssecuritygroup
+  labels:
+    efssecuritygroup: efs-wordpress-sg
+spec:
+  forProvider:
+    description: EFS Wordpress storage Security Group
+    name: efs-wordpress-sg
+    region: us-east-1
+    revokeRulesOnDelete: true
+    tags:
+      Name: efs-wordpress-sg
+      ManagedBy: crossplane
+    vpcIdSelector:
+      matchLabels:
+        vpc: wordpress
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupIngressRule
+metadata:
+  name: app-to-efs-rule
+spec:
+  forProvider:
+    description: Allow access to EFS from EC2
+    fromPort: 2049
+    toPort: 2049
+    ipProtocol: tcp
+    region: us-east-1
+    referencedSecurityGroupIdSelector:
+      matchLabels:
+        ec2securitygroup: ec2-wordpress-sg
+    securityGroupIdSelector:
+      matchLabels:
+        efssecuritygroup: efs-wordpress-sg
+    tags:
+      Name: efs-wordpress-sg
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupEgressRule
+metadata:
+  name: outbound-rule-efs-sg
+spec:
+  forProvider:
+    cidrIpv4: 0.0.0.0/0
+    description: Egress Rule
+    ipProtocol: "-1"
+    region: us-east-1
+    securityGroupIdSelector:
+      matchLabels:
+        efssecuritygroup: efs-wordpress-sg
+    tags:
+      Name: efs-wordpress-sg
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7

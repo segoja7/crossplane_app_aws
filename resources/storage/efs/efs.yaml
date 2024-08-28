@@ -1,0 +1,117 @@
+apiVersion: efs.aws.upbound.io/v1beta1
+kind: FileSystem
+metadata:
+  name: efs-wordpress
+  labels:
+    efs: efs-wordpress
+spec:
+  forProvider:
+    encrypted: true
+    performanceMode: generalPurpose
+    region: us-east-1
+    tags:
+      Name: efs-wordpress
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: efs.aws.upbound.io/v1beta1
+kind: AccessPoint
+metadata:
+  name: efs-wordpress
+spec:
+  forProvider:
+    fileSystemIdSelector:
+      matchLabels:
+        efs: efs-wordpress
+    region: us-east-1
+    tags:
+      Name: efs-wordpress
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: efs.aws.upbound.io/v1beta1
+kind: FileSystemPolicy
+metadata:
+  annotations:
+    upjet.upbound.io/manual-intervention: User needs to add the ARN of the FileSystem to the policy manually.
+  name: efs-policy
+spec:
+  forProvider:
+    bypassPolicyLockoutSafetyCheck: true
+    fileSystemIdSelector:
+      matchLabels:
+        efs: efs-wordpress
+    policy: |
+      {
+          "Version": "2012-10-17",
+          "Statement": [
+              {
+                  "Sid": "connect",
+                  "Effect": "Allow",
+                  "Principal": {
+                      "AWS": "*"
+                  },
+                  "Action": [
+                      "elasticfilesystem:ClientWrite",
+                      "elasticfilesystem:ClientRootAccess",
+                      "elasticfilesystem:ClientMount"
+                  ],
+                  "Resource": "arn:aws:elasticfilesystem:us-east-1:157039837889:file-system/*"
+              },
+              {
+                  "Sid": "NonSecureTransport",
+                  "Effect": "Deny",
+                  "Principal": {
+                      "AWS": "*"
+                  },
+                  "Action": "*",
+                  "Resource": "arn:aws:elasticfilesystem:us-east-1:157039837889:file-system/*",
+                  "Condition": {
+                      "Bool": {
+                          "aws:SecureTransport": "false"
+                      }
+                  }
+              }
+          ]
+      }
+    region: us-east-1
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: efs.aws.upbound.io/v1beta1
+kind: MountTarget
+metadata:
+  name: efs-mounttarget-az1
+spec:
+  forProvider:
+    fileSystemIdSelector:
+      matchLabels:
+        efs: efs-wordpress
+    region: us-east-1
+    securityGroupsSelector:
+      matchLabels:
+        efssecuritygroup: efs-wordpress-sg
+    subnetIdRef:
+      name: database-private-subnet-az1
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: efs.aws.upbound.io/v1beta1
+kind: MountTarget
+metadata:
+  name: efs-mounttarget-az2
+spec:
+  forProvider:
+    fileSystemIdSelector:
+      matchLabels:
+        efs: efs-wordpress
+    region: us-east-1
+    securityGroupsSelector:
+      matchLabels:
+        efssecuritygroup: efs-wordpress-sg
+    subnetIdRef:
+      name: database-private-subnet-az2
+  providerConfigRef:
+    name: segoja7
