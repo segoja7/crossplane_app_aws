@@ -1,17 +1,17 @@
 apiVersion: ec2.aws.upbound.io/v1beta1
 kind: SecurityGroup
 metadata:
-  name: ec2securitygroup
+  name: elbsecuritygroup
   labels:
-    ec2securitygroup: ec2-wordpress-sg
+    elbsecuritygroup: elb-wordpress-sg
 spec:
   forProvider:
-    description: EC2 Wordpress Security Group
-    name: ec2-wordpress-sg
+    description: ELB Wordpress Security Group
+    name: elb-wordpress-sg
     region: us-east-1
     revokeRulesOnDelete: true
     tags:
-      Name: ec2-wordpress-sg
+      Name: elb-wordpress-sg
       ManagedBy: crossplane
     vpcIdSelector:
       matchLabels:
@@ -22,22 +22,20 @@ spec:
 apiVersion: ec2.aws.upbound.io/v1beta1
 kind: SecurityGroupIngressRule
 metadata:
-  name: http-rule
+  name: world-to-elb-rule
 spec:
   forProvider:
-    description: Allow access to EC2 from ELB
+    cidrIpv4: 0.0.0.0/0
+    description: Allow access to ELB from World
     fromPort: 80
     toPort: 80
     ipProtocol: tcp
     region: us-east-1
-    referencedSecurityGroupIdSelector:
-      matchLabels:
-        elbsecuritygroup: elb-wordpress-sg
     securityGroupIdSelector:
       matchLabels:
-        ec2securitygroup: ec2-wordpress-sg
+        elbsecuritygroup: elb-wordpress-sg
     tags:
-      Name: ec2-wordpress-sg
+      Name: elb-wordpress-sg
       ManagedBy: crossplane
   providerConfigRef:
     name: segoja7
@@ -45,7 +43,7 @@ spec:
 apiVersion: ec2.aws.upbound.io/v1beta1
 kind: SecurityGroupEgressRule
 metadata:
-  name: outbound-rule-ec2-wordpress-sg
+  name: outbound-rule-elb-wordpress-sg
 spec:
   forProvider:
     cidrIpv4: 0.0.0.0/0
@@ -54,9 +52,9 @@ spec:
     region: us-east-1
     securityGroupIdSelector:
       matchLabels:
-        ec2securitygroup: ec2-wordpress-sg
+        elbsecuritygroup: elb-wordpress-sg
     tags:
-      Name: ec2-wordpress-sg
+      Name: elb-wordpress-sg
       ManagedBy: crossplane
   providerConfigRef:
     name: segoja7

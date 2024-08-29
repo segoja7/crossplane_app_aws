@@ -1,0 +1,51 @@
+apiVersion: elb.aws.upbound.io/v1beta1
+kind: ELB
+metadata:
+  name: wordpress-elb
+spec:
+  forProvider:
+#    availabilityZones:
+#      - us-east-1a
+#      - us-east-1b
+    connectionDraining: true
+    connectionDrainingTimeout: 400
+    crossZoneLoadBalancing: true
+    healthCheck:
+      - healthyThreshold: 2
+        interval: 30
+        target: HTTP:80
+        timeout: 3
+        unhealthyThreshold: 2
+    idleTimeout: 400
+    internal: false
+    listener:
+      - instancePort: 80
+        instanceProtocol: http
+        lbPort: 80
+        lbProtocol: http
+    region: us-east-1
+    securityGroups:
+      - elbsecuritygroup
+    subnetsRefs:
+        - name: public-subnet-az1
+        - name: public-subnet-az2
+    tags:
+      Name: elb-wordpress
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: elb.aws.upbound.io/v1beta1
+kind: Attachment
+metadata:
+  name: attachment-elb-wordpress
+spec:
+  forProvider:
+    elbRef:
+      name: wordpress-elb
+    instanceSelector:
+      matchLabels:
+          instances: wordpress
+    region: us-east-1
+  providerConfigRef:
+    name: segoja7

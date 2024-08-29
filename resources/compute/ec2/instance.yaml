@@ -2,10 +2,12 @@ apiVersion: ec2.aws.upbound.io/v1beta1
 kind: Instance
 metadata:
   name: ec2-wordpress
+  labels:
+    instances: wordpress
 spec:
   forProvider:
     ami: ami-023508951a94f0c71 # Amazon Linux 2023 AMI
-    associatePublicIpAddress: true
+#    associatePublicIpAddress: true
     availabilityZone: us-east-1a
     disableApiStop: false
     disableApiTermination: false
@@ -14,7 +16,7 @@ spec:
     region: us-east-1
     subnetIdSelector:
       matchLabels:
-        subnet1: public-az1
+        appsubnet1: private1
     tags:
       Name: ec2-wordpress
       ManagedBy: crossplane
@@ -67,6 +69,85 @@ spec:
     userDataReplaceOnChange: true
     volumeTags:
       Name: ec2-wordpress
+      ManagedBy: crossplane
+    vpcSecurityGroupIdSelector:
+      matchLabels:
+        ec2securitygroup: ec2-wordpress-sg
+
+  providerConfigRef:
+    name: segoja7
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: Instance
+metadata:
+  name: ec2-wordpress-2
+  labels:
+    instances: wordpress
+spec:
+  forProvider:
+    ami: ami-023508951a94f0c71 # Amazon Linux 2023 AMI
+#    associatePublicIpAddress: true
+    availabilityZone: us-east-1b
+    disableApiStop: false
+    disableApiTermination: false
+    ebsOptimized: true
+    instanceType: t4g.small
+    region: us-east-1
+    subnetIdSelector:
+      matchLabels:
+        appsubnet2: private2
+    tags:
+      Name: ec2-wordpress-2
+      ManagedBy: crossplane
+    userData: |
+      #!/bin/bash
+      # Update the system
+      yum update -y
+      
+      # Install efs-utils
+      yum install -y amazon-efs-utils
+      
+      # Install Apache
+      yum install -y httpd
+      
+      # Start and enable Apache
+      systemctl start httpd
+      systemctl enable httpd
+      
+      # Install PHP
+      amazon-linux-extras enable php8.0
+      yum clean metadata
+      yum install -y php php-cli php-mysqlnd
+      
+      # Create the mount point directory
+      EFS_ID=fs-07265a8e076602e40
+      MOUNT_POINT=/var/www/html
+      mkdir -p $MOUNT_POINT
+      
+      # Mount the EFS file system
+      echo "$EFS_ID:/ $MOUNT_POINT efs defaults,_netdev 0 0" >> /etc/fstab
+      mount -a -t efs defaults
+      
+      # Verify the mount was successful
+      df -h | grep $MOUNT_POINT
+      
+      # Download and install WordPress
+      cd $MOUNT_POINT
+      wget https://wordpress.org/latest.tar.gz
+      tar -xzf latest.tar.gz
+      cp -r wordpress/* .
+      rm -rf wordpress latest.tar.gz
+      
+      # Set permissions
+      chown -R apache:apache $MOUNT_POINT
+      chmod -R 755 $MOUNT_POINT
+      
+      # Restart Apache to apply changes
+      systemctl restart httpd
+
+    userDataReplaceOnChange: true
+    volumeTags:
+      Name: ec2-wordpress-2
       ManagedBy: crossplane
     vpcSecurityGroupIdSelector:
       matchLabels:

@@ -45,7 +45,7 @@ spec:
     maintenanceWindow: Mon:00:00-Mon:03:00
     maxAllocatedStorage: 40
     monitoringInterval: 0
-    multiAz: false
+    multiAz: true
     networkType: IPV4
     passwordSecretRef:
       key: password
