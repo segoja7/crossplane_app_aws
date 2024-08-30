@@ -45,7 +45,7 @@ spec:
     maintenanceWindow: Mon:00:00-Mon:03:00
     maxAllocatedStorage: 40
     monitoringInterval: 0
-    multiAz: true
+    multiAz: true #for some reason multi-az, you need switch first in false and when the resource is created you can change to multi-az
     networkType: IPV4
     passwordSecretRef:
       key: password

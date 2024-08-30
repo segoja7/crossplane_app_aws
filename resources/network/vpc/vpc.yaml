@@ -373,7 +373,7 @@ spec:
     routeTableIdSelector:
       matchLabels:
         route_table: private
-    natGatewayId: nat-06a31976d05a7f53d
+#    natGatewayId: nat-06a31976d05a7f53d
 #    natGatewayIdRef:
 #      name: nat-gateway-az1
     natGatewayIdSelector:
